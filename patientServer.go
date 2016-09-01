@@ -2,15 +2,18 @@ package main
 
 import (
     "fmt"
+    "log"
     "net/http"
     "html/template"
+    "database/sql"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 type Patient struct {
     Name string
-   // Email string
-   // Phone string
-    //Passwd string
+   Email string
+    Phone string
+    Passwd string
 }
 
 
@@ -25,10 +28,9 @@ func userHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request){
-    name := r.FormValue("Name")
-    p := &Patient{Name: name}
-
-    fmt.Fprintf(w, "Hello %s", p.Name)
+    name, email, phone, passwd := r.FormValue("Name"), r.FormValue("Email"), r.FormValue("Phone"), r.FormValue("Password")
+    p := &Patient{Name: name, Email: email, Phone: phone, Passwd: passwd}
+    fmt.Fprintf(w, "%s%s%s%s", p.Name, p.Email, p.Phone, p.Passwd)
 
 
     }
@@ -36,6 +38,11 @@ func registerHandler(w http.ResponseWriter, r *http.Request){
 
 
 func main() {
+    db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/customer")
+    if err != nil {
+            log.Fatal(err)
+    }
+    defer db.Close()
     http.HandleFunc("/admin/", adminHandler)
     http.HandleFunc("/dashboard/", userHandler)
     http.HandleFunc("/register/", registerHandler)
