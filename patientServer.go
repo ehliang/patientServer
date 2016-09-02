@@ -2,16 +2,27 @@ package main
 
 import (
     "fmt"
+    "log"
     "net/http"
     "html/template"
+    "github.com/gorilla/mux"
+    "github.com/gorilla/securecookie"
+    "database/sql"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 type Patient struct {
     Name string
-   // Email string
-   // Phone string
-    //Passwd string
+   Email string
+    Phone string
+    Passwd string
 }
+
+var cookieHandler = secureCookie.New(
+    securecookie.GenerateRandomKey(64), 
+    securecookie.GenerateRandomKey(32))
+
+var router = mux.NewRouter()
 
 
 func adminHandler(w http.ResponseWriter, r *http.Request){
@@ -25,20 +36,37 @@ func userHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request){
-    name := r.FormValue("Name")
-    p := &Patient{Name: name}
+    name, email, phone, passwd := r.FormValue("Name"), r.FormValue("Email"), r.FormValue("Phone"), r.FormValue("Password")
+    p := &Patient{Name: name, Email: email, Phone: phone, Passwd: passwd}
+    fmt.Fprintf(w, "%s%s%s%s", p.Name, p.Email, p.Phone, p.Passwd)
 
-    fmt.Fprintf(w, "Hello %s", p.Name)
-
+	db.Exec
 
     }
 
+func userLoginHandler(w http.ResponseWriter, r *http.Request){
+    setSession()
+}
 
+func userLogoutHandler(w http.ResponseWriter, r *http.Request){
+    clearSession()
+}
+
+func setSession()
+{
+}
 
 func main() {
-    http.HandleFunc("/admin/", adminHandler)
-    http.HandleFunc("/dashboard/", userHandler)
-    http.HandleFunc("/register/", registerHandler)
+    db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/customer")
+    if err != nil {
+            log.Fatal(err)
+    }
+    defer db.Close()
+    http.HandleFunc("/admin/", adminHandler).Methods("POST")
+    http.HandleFunc("/login/", userLoginHandler).Methods("POST")
+    http.HandleFunc("/logout/", userLogoutHandler).Methods("POST")
+    http.HandleFunc("/dashboard/", userHandler).Methods("POST")
+    http.HandleFunc("/register/", registerHandler).Methods("POST")
     http.ListenAndServe(":8080", nil)
 }
 
