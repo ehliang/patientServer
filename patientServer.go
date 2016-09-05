@@ -72,7 +72,17 @@ func userLogoutHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func setSession(userName string, r http.ResponseWriter){
-
+    value := map[string]string{
+         "name":userName, 
+    }
+    if encoded, err := cookieHandler.Encode("session", value); err == nil{
+         cookie := &http.Cookie{
+             Name: "session", 
+             Value: encoded, 
+             Path: "/", 
+        }
+        http.SetCookie(r, cookie) 
+    }
 }
 
 func clearSession(w http.ResponseWriter){
