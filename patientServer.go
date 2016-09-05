@@ -75,6 +75,7 @@ func userLoginHandler(w http.ResponseWriter, r *http.Request){
 
 func userLogoutHandler(w http.ResponseWriter, r *http.Request){
     clearSession(w)
+    http.Redirect(w, r,"/index/", 302)
 }
 
 func setSession(userName string, w http.ResponseWriter){
