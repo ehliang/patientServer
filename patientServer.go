@@ -30,14 +30,20 @@ func adminHandler(w http.ResponseWriter, r *http.Request){
     fmt.Fprintf(w, "Hello %s", title)
 }
 
-func dashboardHandler(w http.ResponseWriter, r *http.Request){
-    t, _ := template.ParseFiles("dashboard.html")
-    t.Execute(w, nil)
-}
-
 func registerHandler(w http.ResponseWriter, r *http.Request){
     t, _ := template.ParseFiles("register.html")
     t.Execute(w, nil)
+}
+
+func dashboardHandler(w http.ResponseWriter, r *http.Request){
+
+    userName := isLoggedIn(r)
+    if userName != ""{
+        t, _ := template.ParseFiles("dashboard.html")
+        t.Execute(w, nil)
+    }else{
+        fmt.Fprint(w, "Access Denied")    
+    }
 }
 
 func confirmationHandler(w http.ResponseWriter, r *http.Request){
@@ -71,7 +77,7 @@ func userLogoutHandler(w http.ResponseWriter, r *http.Request){
     clearSession(w)
 }
 
-func setSession(userName string, r http.ResponseWriter){
+func setSession(userName string, w http.ResponseWriter){
     value := map[string]string{
          "name":userName, 
     }
@@ -81,9 +87,21 @@ func setSession(userName string, r http.ResponseWriter){
              Value: encoded, 
              Path: "/", 
         }
-        http.SetCookie(r, cookie) 
+        http.SetCookie(w, cookie) 
     }
 }
+
+func isLoggedIn(r *http.Request) (userName string) {
+     if cookie, err := r.Cookie("session"); err == nil{
+         cookieValue := make(map[string]string) 
+             if err = cookieHandler.Decode("session", cookie.Value, &cookieValue); err == nil {
+                 userName = cookieValue["name"]
+             }
+     }
+     return userName
+}
+
+
 
 func clearSession(w http.ResponseWriter){
     cookie := &http.Cookie{
